@@ -1,7 +1,11 @@
+import javax.management.StringValueExp;
 import java.net.*;
 import java.io.*;
+import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class WebServer extends Thread {
+	private static final int PORT_SERVER_SOCKET = 10009;
 	protected Socket clientSocket;
 	//0-off 1-run 3-maintenance
 	public static int currentState=0;
@@ -15,20 +19,45 @@ public class WebServer extends Thread {
 		System.out.println("New Communication Thread Started");
 
 		try {
+
 			PrintWriter out = new PrintWriter(clientSocket.getOutputStream(),
 					true);
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					clientSocket.getInputStream()));
+			BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
+			File myObj=new File("src/main/resources/TestSite/a.html");
+			Scanner myReader = new Scanner(myObj);
+			
 			String inputLine;
 
-			out.println("HTTP/1.0 200 OK\n\n");
+			//get endpoint
 			while ((inputLine = in.readLine()) != null) {
 				System.out.println("Server: " + inputLine);
-				out.println(inputLine);
+				if(inputLine.startsWith("GET")){
+					char path[] = new char[100];
+					int start_value=4;
+					inputLine.getChars(start_value,inputLine.length()-9,path,0);
+					String endpoint=String.valueOf(path);
+					System.out.println("asta e"+endpoint);
+					/*
+					myObj = new File("src/main/resources/TestSite"+endpoint);
+					System.out.println(myObj.toString());
+					myReader=myReader1;
+					System.out.println("kjhgf");
+					*/
 
-				if (inputLine.trim().equals(""))
 					break;
+				}
+
+
+				System.out.println("Aaaa" );
+			}
+
+			out.println("HTTP/1.0 400 OK\n\n");
+			if(myReader!=null)
+			while (myReader.hasNextLine()) {
+
+				String data = myReader.nextLine();
+				out.println(data);
 			}
 
 			out.close();
@@ -43,7 +72,7 @@ public class WebServer extends Thread {
 		ServerSocket serverSocket = null;
 
 		try {
-			serverSocket = new ServerSocket(10008);
+			serverSocket = new ServerSocket(PORT_SERVER_SOCKET);
 			System.out.println("Connection Socket Created");
 			try {
 				while (true) {
