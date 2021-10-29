@@ -12,7 +12,7 @@ public class WebServerCommandLine {
     public static void main(String[] args) throws IOException {
         final int PORT_SERVER_SOCKET = 10008;
         ServerSocket serverSocket = null;
-        int currentState;
+        int currentState=1;
         System.out.println("0-running");
         System.out.println("1-stopped");
         System.out.println("2-maintenance");
