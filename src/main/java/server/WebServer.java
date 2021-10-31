@@ -1,6 +1,8 @@
 package server;
+import util.WebServerUtil;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.net.*;
 import java.io.*;
@@ -14,33 +16,34 @@ import java.util.stream.Collectors;
 
 public class WebServer extends Thread {
 
+    private final String sitePath;
     protected Socket clientSocket;
+    private WebServerUtil webServerUtil;
 
-    public WebServer(Socket clientSoc) {
+    public WebServer(Socket clientSoc, String sitePath) {
         clientSocket = clientSoc;
+        this.sitePath = sitePath;
+        webServerUtil = new WebServerUtil(sitePath);
         start();
     }
 
 
     public void run() {
-        System.out.println("New Communication Thread Started");
+
 
         try {
-
-           PrintWriter out = new PrintWriter(clientSocket.getOutputStream(),
-                   true);
+            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             Scanner myReader = null;
             String inputLine;
             File myFile = null;
-            //get endpoint
+
             while ((inputLine = in.readLine()) != null) {
                 System.out.println("Server: " + inputLine);
                 if (inputLine.startsWith("GET")) {
-                    String path = takePathFromRequestGet(inputLine);
-                    myFile = findPathFile("src/main/resources/TestSite", path);
+                    String requestedFilePath = webServerUtil.takePathFromRequestGet(inputLine);
+                    myFile = webServerUtil.takeRequestedFile(requestedFilePath);
                     myReader = new Scanner(myFile);
-
                 }
 
                 if (inputLine.trim().equals(""))
@@ -48,23 +51,24 @@ public class WebServer extends Thread {
 
             }
 
-            out.println("HTTP/1.0 200 OK\n\n");
-
-            if (myReader != null)
+            if (myReader != null) {
+                out.println("HTTP/1.1 200 OK");
+                out.println("\r\n");
                 if (myFile.getAbsolutePath().endsWith(".jpg")) {
-
-
+                    //trebuie adaugat
                 } else
                     while (myReader.hasNextLine()) {
-
                         String data = myReader.nextLine();
                         out.println(data);
                     }
+            } else {
+                out.println("HTTP/1.1 400 PAGE NOT FOUND");
+            }
+
             while (clientSocket.getKeepAlive()) {
 
             }
             out.close();
-
             in.close();
             clientSocket.close();
         } catch (IOException e) {
@@ -72,46 +76,5 @@ public class WebServer extends Thread {
             System.exit(1);
         }
     }
-
-    private File findPathFile(String s, String path) throws IOException {
-
-        String p = s;
-        p = p.concat(path);
-        p = p.trim();
-        p = p.replaceAll("%20", " ");
-        p = p.trim();
-
-        File fi = new File(p);
-
-        String finalEndpoint = path.replace("/", "").replaceAll("%20", " ");
-        if (!fi.exists()) {
-            return findRequestedFileInTestSiteLocation(s, finalEndpoint);
-        } else {
-            return fi;
-        }
-    }
-
-    private File findRequestedFileInTestSiteLocation(String s, String finalEndpoint) throws IOException {
-        List<Path> mylist = Files.walk(Paths.get("src/main/resources/TestSite"))
-                .filter(Files::isRegularFile)
-                .filter(path1 -> path1.endsWith(finalEndpoint))
-                .collect(Collectors.toList());
-        if (mylist.size() == 0) {
-            return new File("src/main/resources/TestSite/error.html");
-        } else {
-            return new File(String.valueOf(mylist.get(0)));
-        }
-    }
-
-    private String takePathFromRequestGet(String inputLine) {
-        char path[] = new char[100];
-        int start_value = 4;
-        inputLine.getChars(start_value, inputLine.length() - 9, path, 0);
-        String endpoint = String.valueOf(path);
-        endpoint = endpoint.trim();
-        if (endpoint.length() == 1) {
-            endpoint += "index.html";
-        }
-        return endpoint;
-    }
 }
+

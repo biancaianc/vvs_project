@@ -11,6 +11,7 @@ import java.sql.SQLOutput;
 public class WebServerCommandLine {
     public static void main(String[] args) throws IOException {
         final int PORT_SERVER_SOCKET = 10008;
+        final String PATH_SITE="src/main/resources/TestSite";
         ServerSocket serverSocket = null;
         int currentState=1;
         System.out.println("0-running");
@@ -28,7 +29,7 @@ public class WebServerCommandLine {
                     try {
                         while (true) {
                             System.out.println("Waiting for Connection");
-                            new WebServer(serverSocket.accept());
+                            new WebServer(serverSocket.accept(),PATH_SITE);
                         }
                     } catch (IOException e) {
                         System.err.println("Accept failed.");
