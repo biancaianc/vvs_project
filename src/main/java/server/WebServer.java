@@ -1,4 +1,6 @@
 package server;
+
+import cli.WebServerCommandLine;
 import util.WebServerUtil;
 
 import javax.imageio.ImageIO;
@@ -37,20 +39,24 @@ public class WebServer extends Thread {
             Scanner myReader = null;
             String inputLine;
             File myFile = null;
+            if (WebServerCommandLine.currentState == 2) {
+                myFile = new File(sitePath + "/maintenance.html");
+                myReader = new Scanner(myFile);
+            } else {
+                if (WebServerCommandLine.currentState == 0) {
+                    while ((inputLine = in.readLine()) != null) {
+                        System.out.println("Server: " + inputLine);
+                        if (inputLine.startsWith("GET")) {
+                            String requestedFilePath = webServerUtil.takePathFromRequestGet(inputLine);
+                            myFile = webServerUtil.takeRequestedFile(requestedFilePath);
+                            myReader = new Scanner(myFile);
+                        }
 
-            while ((inputLine = in.readLine()) != null) {
-                System.out.println("Server: " + inputLine);
-                if (inputLine.startsWith("GET")) {
-                    String requestedFilePath = webServerUtil.takePathFromRequestGet(inputLine);
-                    myFile = webServerUtil.takeRequestedFile(requestedFilePath);
-                    myReader = new Scanner(myFile);
+                        if (inputLine.trim().equals(""))
+                            break;
+                    }
                 }
-
-                if (inputLine.trim().equals(""))
-                    break;
-
             }
-
             if (myReader != null) {
                 out.println("HTTP/1.1 200 OK");
                 out.println("\r\n");
@@ -64,6 +70,7 @@ public class WebServer extends Thread {
             } else {
                 out.println("HTTP/1.1 400 PAGE NOT FOUND");
             }
+
 
             while (clientSocket.getKeepAlive()) {
 

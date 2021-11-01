@@ -9,11 +9,11 @@ import java.net.ServerSocket;
 import java.sql.SQLOutput;
 
 public class WebServerCommandLine {
+    public static int currentState=1;
     public static void main(String[] args) throws IOException {
         final int PORT_SERVER_SOCKET = 10008;
         final String PATH_SITE="src/main/resources/TestSite";
         ServerSocket serverSocket = null;
-        int currentState=1;
         System.out.println("0-running");
         System.out.println("1-stopped");
         System.out.println("2-maintenance");
@@ -23,29 +23,7 @@ public class WebServerCommandLine {
         currentState = Integer.parseInt(option);
         switch (currentState) {
             case 0: {
-                try {
-                    serverSocket = new ServerSocket(PORT_SERVER_SOCKET);
-                    System.out.println("Connection Socket Created");
-                    try {
-                        while (true) {
-                            System.out.println("Waiting for Connection");
-                            new WebServer(serverSocket.accept(),PATH_SITE);
-                        }
-                    } catch (IOException e) {
-                        System.err.println("Accept failed.");
-                        System.exit(1);
-                    }
-                } catch (IOException e) {
-                    System.err.println("Could not listen on port: 10008.");
-                    System.exit(1);
-                } finally {
-                    try {
-                        serverSocket.close();
-                    } catch (IOException e) {
-                        System.err.println("Could not close port: 10008.");
-                        System.exit(1);
-                    }
-                }
+                connectToServer(PORT_SERVER_SOCKET, PATH_SITE, serverSocket);
             }
             break;
 
@@ -54,10 +32,38 @@ public class WebServerCommandLine {
                 break;
             case 2:
                 System.out.println("Server in maintenance.");
+                connectToServer(PORT_SERVER_SOCKET, PATH_SITE, serverSocket);
+                break;
 
 
         }
 
+    }
+
+    private static void connectToServer(int PORT_SERVER_SOCKET, String PATH_SITE, ServerSocket serverSocket) {
+        try {
+            serverSocket = new ServerSocket(PORT_SERVER_SOCKET);
+            System.out.println("Connection Socket Created");
+            try {
+                while (true) {
+                    System.out.println("Waiting for Connection");
+                    new WebServer(serverSocket.accept(),PATH_SITE);
+                }
+            } catch (IOException e) {
+                System.err.println("Accept failed.");
+                System.exit(1);
+            }
+        } catch (IOException e) {
+            System.err.println("Could not listen on port: 10008.");
+            System.exit(1);
+        } finally {
+            try {
+                serverSocket.close();
+            } catch (IOException e) {
+                System.err.println("Could not close port: 10008.");
+                System.exit(1);
+            }
+        }
     }
 
 }
