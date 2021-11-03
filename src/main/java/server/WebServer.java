@@ -1,7 +1,10 @@
 package server;
 
 import cli.WebServerCommandLine;
+import factory.InputFactory;
+import factory.OutputFactory;
 import util.WebServerUtil;
+//import util.WebServerUtil;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -21,52 +24,52 @@ public class WebServer extends Thread {
     private final String sitePath;
     protected Socket clientSocket;
     private WebServerUtil webServerUtil;
+    private InputFactory inputFactory;
+    private OutputFactory outputFactory;
 
     public WebServer(Socket clientSoc, String sitePath) {
         clientSocket = clientSoc;
         this.sitePath = sitePath;
         webServerUtil = new WebServerUtil(sitePath);
-        start();
+        inputFactory = new InputFactory();
+        outputFactory = new OutputFactory();
+
     }
 
-
+    public void start_server(){
+        start();
+    }
     public void run() {
 
-
         try {
-            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            Scanner myReader = null;
+
+            //PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+            //BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            BufferedReader in = inputFactory.getInputBufferReader(clientSocket.getInputStream());
+            PrintWriter out = outputFactory.getOutputPrintWriter(clientSocket.getOutputStream());
+            System.out.println("jjj");
+
             String inputLine;
             File myFile = null;
-            if (WebServerCommandLine.currentState == 2) {
-                myFile = new File(sitePath + "/maintenance.html");
-                myReader = new Scanner(myFile);
-            } else {
-                if (WebServerCommandLine.currentState == 0) {
-                    while ((inputLine = in.readLine()) != null) {
-                        System.out.println("Server: " + inputLine);
-                        if (inputLine.startsWith("GET")) {
-                            String requestedFilePath = webServerUtil.takePathFromRequestGet(inputLine);
-                            myFile = webServerUtil.takeRequestedFile(requestedFilePath);
-                            myReader = new Scanner(myFile);
-                        }
 
-                        if (inputLine.trim().equals(""))
-                            break;
+            if (WebServerCommandLine.getCurrentState() == 2) {
+                myFile = new File(sitePath + "/maintenance.html");
+            }
+            if (WebServerCommandLine.getCurrentState() == 0) {
+                while ((inputLine = in.readLine()) != null) {
+                    System.out.println("Server: " + inputLine);
+                    if (inputLine.startsWith("GET")) {
+                        String requestedFilePath = webServerUtil.takePathFromRequestGet(inputLine);
+                        myFile = webServerUtil.takeRequestedFile(requestedFilePath);
                     }
+
+                    if (inputLine.trim().equals(""))
+                        break;
                 }
             }
-            if (myReader != null) {
-                out.println("HTTP/1.1 200 OK");
-                out.println("\r\n");
-                if (myFile.getAbsolutePath().endsWith(".jpg")) {
-                    //trebuie adaugat
-                } else
-                    while (myReader.hasNextLine()) {
-                        String data = myReader.nextLine();
-                        out.println(data);
-                    }
+
+            if (myFile != null) {
+                sendToOutputClient(out, myFile);
             } else {
                 out.println("HTTP/1.1 400 PAGE NOT FOUND");
             }
@@ -83,5 +86,19 @@ public class WebServer extends Thread {
             System.exit(1);
         }
     }
-}
 
+
+    public void sendToOutputClient(PrintWriter out, File myFile) throws FileNotFoundException {
+        System.out.println("blablabla");
+        Scanner myReader = new Scanner(myFile);
+        out.println("HTTP/1.1 200 OK");
+        out.println("\r\n");
+        if (myFile.getAbsolutePath().endsWith(".jpg")) {
+            //trebuie adaugat
+        } else while (myReader.hasNextLine()) {
+            String data = myReader.nextLine();
+            out.println(data);
+            System.out.println(data);
+        }
+    }
+}

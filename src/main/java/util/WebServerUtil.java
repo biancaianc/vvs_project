@@ -12,7 +12,7 @@ public class WebServerUtil {
     private String sitePath;
     public WebServerUtil(String sitepah) {
         this.sitePath=sitepah;
-    }
+   }
 
     public File takeRequestedFile(String requestedFilePath) throws IOException {
         String p = this.sitePath;
