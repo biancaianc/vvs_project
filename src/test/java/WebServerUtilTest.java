@@ -47,16 +47,5 @@ public class WebServerUtilTest {
         assertEquals(expectedFile, result);
     }
 
-    @Test
-    public void takePathFromRequestGet_normal() {
-        String expected = "/a.html";
-        String result = webServerUtil.takePathFromRequestGet("GET /a.html HTTP/1.1");
-        assertEquals(expected, result);
-    }
-    @Test
-    public void takePathFromRequestGet_index() {
-        String expected = "/index.html";
-        String result = webServerUtil.takePathFromRequestGet("GET / HTTP/1.1");
-        assertEquals(expected, result);
-    }
+
 }

@@ -18,8 +18,9 @@ public class WebServerCommandLine {
         return currentState;
     }
     public static ServerSocketFactory serverSocketFactory=new ServerSocketFactory();
+
     public static void main(String[] args) throws IOException {
-        final int PORT_SERVER_SOCKET = 10009;
+        final int PORT_SERVER_SOCKET = 10050;
         final String PATH_SITE="src/main/resources/TestSite";
         ServerSocket serverSocket = null;
         System.out.println("0-running");
@@ -58,7 +59,9 @@ public class WebServerCommandLine {
                 while (true) {
                     System.out.println("Waiting for Connection");
                     WebServer webserver = new WebServer(serverSocket.accept(), PATH_SITE);
-                    webserver.start();
+                    webserver.start_server();
+                    if(webserver.stopWaiting())
+                        break;
                 }
             } catch (IOException e) {
                 System.err.println("Accept failed.");

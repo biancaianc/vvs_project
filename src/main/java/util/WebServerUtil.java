@@ -41,17 +41,7 @@ public class WebServerUtil {
         }
     }
 
-    public String takePathFromRequestGet(String inputLine) {
-        char path[] = new char[100];
-        int start_value = 4;
-        inputLine.getChars(start_value, inputLine.length() - 9, path, 0);
-        String endpoint = String.valueOf(path);
-        endpoint = endpoint.trim();
-        if (endpoint.length() == 1) {
-            endpoint += "index.html";
-        }
-        return endpoint;
-    }
+
 }
 
 

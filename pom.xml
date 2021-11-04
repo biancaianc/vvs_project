@@ -37,7 +37,6 @@
                 <configuration>
                     <excludes>
                         <exclude>**/gui/**</exclude>
-
                     </excludes>
                 </configuration>
                 <executions>

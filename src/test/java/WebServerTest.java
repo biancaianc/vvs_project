@@ -26,18 +26,15 @@ public class WebServerTest {
     private WebServer webServer=Mockito.mock(WebServer.class);
     private WebServerCommandLine webServerCommandLine=Mockito.mock(WebServerCommandLine.class);
     private WebServerUtil webServerUtil=Mockito.mock(WebServerUtil.class);
-    ServerSocketFactory serverSocketFactory=Mockito.mock(ServerSocketFactory.class);
+    private ServerSocketFactory serverSocketFactory=Mockito.mock(ServerSocketFactory.class);
     private InputFactory inputFactory=Mockito.mock(InputFactory.class);
     private OutputFactory outputFactory=Mockito.mock(OutputFactory.class);
 
-
+    @Ignore
     @Test
     public void test_running() throws IOException {
         WebServerCommandLine.currentState=2;
         WebServer webServer=new WebServer(new Socket(),"src/main/resources/TestSite/");
-        //Mockito.when(WebServerCommandLine.getCurrentState()).thenReturn(1);
-        System.out.println("KKK");
-
         Mockito.when(inputFactory.getInputBufferReader(any())).thenReturn(new BufferedReader(new InputStreamReader(new FileInputStream("src/test/resources/test_input.txt"))));
         Mockito.when(outputFactory.getOutputPrintWriter(any())).thenReturn(new PrintWriter(new FileOutputStream("src/test/resources/test_maintenance_output.txt"), true));
         webServer.run();
@@ -48,7 +45,7 @@ public class WebServerTest {
     @Before
     public void cleanOutputFile() throws FileNotFoundException {
         File outputFileToClean= new File("src/test/resources/test_output.txt");
-                PrintWriter writer = new PrintWriter(outputFileToClean.getAbsolutePath());
+        PrintWriter writer = new PrintWriter(outputFileToClean.getAbsolutePath());
         writer.print("");
         writer.close();
     }
@@ -103,6 +100,20 @@ public class WebServerTest {
         assertEquals(file.length(),3);
     }
 
+    @Test
+    public void takePathFromRequestGet_normal() {
+        WebServer webServer=new WebServer(new Socket(),"src/main/resources/TestSite/");
+        String expected = "/a.html";
+        String result = webServer.takePathFromRequestGet("GET /a.html HTTP/1.1");
+        assertEquals(expected, result);
+    }
+    @Test
+    public void takePathFromRequestGet_index() {
+        WebServer webServer=new WebServer(new Socket(),"src/main/resources/TestSite/");
+        String expected = "/index.html";
+        String result = webServer.takePathFromRequestGet("GET / HTTP/1.1");
+        assertEquals(expected, result);
+    }
 
 
 

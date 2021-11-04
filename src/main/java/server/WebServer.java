@@ -36,8 +36,9 @@ public class WebServer extends Thread {
 
     }
 
-    public void start_server(){
+    public String start_server(){
         start();
+        return "start";
     }
     public void run() {
 
@@ -47,7 +48,6 @@ public class WebServer extends Thread {
             //BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             BufferedReader in = inputFactory.getInputBufferReader(clientSocket.getInputStream());
             PrintWriter out = outputFactory.getOutputPrintWriter(clientSocket.getOutputStream());
-            System.out.println("jjj");
 
             String inputLine;
             File myFile = null;
@@ -59,7 +59,7 @@ public class WebServer extends Thread {
                 while ((inputLine = in.readLine()) != null) {
                     System.out.println("Server: " + inputLine);
                     if (inputLine.startsWith("GET")) {
-                        String requestedFilePath = webServerUtil.takePathFromRequestGet(inputLine);
+                        String requestedFilePath = takePathFromRequestGet(inputLine);
                         myFile = webServerUtil.takeRequestedFile(requestedFilePath);
                     }
 
@@ -100,5 +100,21 @@ public class WebServer extends Thread {
             out.println(data);
             System.out.println(data);
         }
+    }
+
+    public String takePathFromRequestGet(String inputLine) {
+        char path[] = new char[100];
+        int start_value = 4;
+        inputLine.getChars(start_value, inputLine.length() - 9, path, 0);
+        String endpoint = String.valueOf(path);
+        endpoint = endpoint.trim();
+        if (endpoint.length() == 1) {
+            endpoint += "index.html";
+        }
+        return endpoint;
+    }
+
+    public boolean stopWaiting() {
+        return false;
     }
 }
