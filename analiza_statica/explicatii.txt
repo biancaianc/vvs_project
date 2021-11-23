@@ -1,0 +1,17 @@
+Initial 24 de bugs in 10 clase
+Actiuni:
+-eliminat clasele din pachetul de factory, care produceau buffer reader, print writer, server socket
+-eliminare System.exit in WebServer si inlocuire cu RuntimeException
+-in WebServerCommandLine verificare daca ceea ce se citeste de la tastatura !=null
+-in WebServerCommandLine adaugare caz de default la switch, pentru cand ceea ce se citeste nu e o optiune valida
+-delete ignored tests
+-pentru bug de Internatiolization am schimbat:
+     PrintWriter printWriter=new PrintWriter(new FileOutputStream("src/test/resources/output.txt"));
+     in:
+      PrintWriter printWriter= new PrintWriter(new OutputStreamWriter(
+               new FileOutputStream("src/test/resources/output.txt"), StandardCharsets.UTF_8), true);
+     ( pentru ca aplicatia sa mearga similar pe toate platformele )
+
+-similat cu PrintWriter, adaugare UTF_8 pentru  BufferReader, Scanner
+
+-ramane un singur bug: faptul ca in contructorul lui WebServer se primeste un clientSocket

@@ -1,38 +1,26 @@
 package server;
 
 import cli.WebServerCommandLine;
-import factory.InputFactory;
-import factory.OutputFactory;
 import util.WebServerUtil;
-//import util.WebServerUtil;
 
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import java.awt.image.BufferedImage;
 import java.net.*;
 import java.io.*;
-import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
+
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
-import java.util.stream.Collectors;
+
 
 public class WebServer extends Thread {
 
     private final String sitePath;
-    protected Socket clientSocket;
+    private Socket clientSocket;
     private WebServerUtil webServerUtil;
-    private InputFactory inputFactory;
-    private OutputFactory outputFactory;
+
 
     public WebServer(Socket clientSoc, String sitePath) {
         clientSocket = clientSoc;
         this.sitePath = sitePath;
         webServerUtil = new WebServerUtil(sitePath);
-        inputFactory = new InputFactory();
-        outputFactory = new OutputFactory();
 
     }
 
@@ -43,11 +31,9 @@ public class WebServer extends Thread {
     public void run() {
 
         try {
-
-            //PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-            //BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            BufferedReader in = inputFactory.getInputBufferReader(clientSocket.getInputStream());
-            PrintWriter out = outputFactory.getOutputPrintWriter(clientSocket.getOutputStream());
+            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(),StandardCharsets.UTF_8));
+            PrintWriter out= new PrintWriter(new OutputStreamWriter(
+                    (clientSocket.getOutputStream()), StandardCharsets.UTF_8), true);
 
             String inputLine;
             File myFile = null;
@@ -83,14 +69,18 @@ public class WebServer extends Thread {
             clientSocket.close();
         } catch (IOException e) {
             System.err.println("Problem with Communication Server");
-            System.exit(1);
+            throw new RuntimeException();
         }
     }
 
 
     public void sendToOutputClient(PrintWriter out, File myFile) throws FileNotFoundException {
-        System.out.println("blablabla");
-        Scanner myReader = new Scanner(myFile);
+        Scanner myReader = null;
+        try {
+            myReader = new Scanner(myFile,StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         out.println("HTTP/1.1 200 OK");
         out.println("\r\n");
         if (myFile.getAbsolutePath().endsWith(".jpg")) {

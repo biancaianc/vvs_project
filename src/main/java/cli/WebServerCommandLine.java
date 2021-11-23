@@ -1,23 +1,23 @@
 package cli;
 
-import factory.ServerSocketFactory;
 import server.WebServer;
-import util.WebServerUtil;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
-import java.sql.SQLOutput;
+import java.nio.charset.StandardCharsets;
+
+
 
 public class WebServerCommandLine {
-    public static int currentState=1;
+
+    private static int currentState=1;
 
     public static int getCurrentState() {
         return currentState;
     }
-    public static ServerSocketFactory serverSocketFactory=new ServerSocketFactory();
 
     public static void main(String[] args) throws IOException {
         final int PORT_SERVER_SOCKET = 10050;
@@ -26,11 +26,12 @@ public class WebServerCommandLine {
         System.out.println("0-running");
         System.out.println("1-stopped");
         System.out.println("2-maintenance");
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(System.in));
+        InputStreamReader in=new InputStreamReader(System.in,StandardCharsets.UTF_8);
+        BufferedReader reader = new BufferedReader(in);
         String option = reader.readLine();
-        currentState = Integer.parseInt(option);
-        //serverSocket = new ServerSocket(PORT_SERVER_SOCKET);
+        if(option!=null)
+         currentState = Integer.parseInt(option);
+
 
         switch (currentState) {
             case 0: {
@@ -45,6 +46,8 @@ public class WebServerCommandLine {
                 System.out.println("Server in maintenance.");
                 connectToServer(PORT_SERVER_SOCKET, PATH_SITE);
                 break;
+            default:
+                System.out.println("Not a valid state");
 
 
         }
@@ -52,7 +55,7 @@ public class WebServerCommandLine {
     }
 
     public static void connectToServer(int PORT_SERVER_SOCKET, String PATH_SITE) throws IOException {
-        ServerSocket serverSocket=serverSocketFactory.createSocketFor(PORT_SERVER_SOCKET);
+        ServerSocket serverSocket=new ServerSocket(PORT_SERVER_SOCKET);
         try {
             System.out.println("Connection Socket Created");
             try {
