@@ -38,10 +38,10 @@ public class WebServer extends Thread {
             String inputLine;
             File myFile = null;
 
-            if (WebServerCommandLine.getCurrentState() == 2) {
+            if (WebServerConnection.getCurrentState() == 2) {
                 myFile = new File(sitePath + "/maintenance.html");
             }
-            if (WebServerCommandLine.getCurrentState() == 0) {
+            if (WebServerConnection.getCurrentState() == 0) {
                 while ((inputLine = in.readLine()) != null) {
                     System.out.println("Server: " + inputLine);
                     if (inputLine.startsWith("GET")) {

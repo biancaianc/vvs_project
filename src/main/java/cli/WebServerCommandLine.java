@@ -1,6 +1,7 @@
 package cli;
 
 import server.WebServer;
+import server.WebServerConnection;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -13,11 +14,7 @@ import java.nio.charset.StandardCharsets;
 
 public class WebServerCommandLine {
 
-    private static int currentState=1;
 
-    public static int getCurrentState() {
-        return currentState;
-    }
 
     public static void main(String[] args) throws IOException {
         final int PORT_SERVER_SOCKET = 10050;
@@ -30,12 +27,12 @@ public class WebServerCommandLine {
         BufferedReader reader = new BufferedReader(in);
         String option = reader.readLine();
         if(option!=null)
-         currentState = Integer.parseInt(option);
+         WebServerConnection.currentState = Integer.parseInt(option);
 
 
-        switch (currentState) {
+        switch (WebServerConnection.currentState) {
             case 0: {
-                connectToServer(PORT_SERVER_SOCKET, PATH_SITE);
+                WebServerConnection.connectToServer(PORT_SERVER_SOCKET, PATH_SITE);
             }
             break;
 
@@ -44,7 +41,7 @@ public class WebServerCommandLine {
                 break;
             case 2:
                 System.out.println("Server in maintenance.");
-                connectToServer(PORT_SERVER_SOCKET, PATH_SITE);
+                WebServerConnection.connectToServer(PORT_SERVER_SOCKET, PATH_SITE);
                 break;
             default:
                 System.out.println("Not a valid state");
@@ -54,30 +51,6 @@ public class WebServerCommandLine {
 
     }
 
-    public static void connectToServer(int PORT_SERVER_SOCKET, String PATH_SITE) throws IOException {
-        ServerSocket serverSocket=new ServerSocket(PORT_SERVER_SOCKET);
-        try {
-            System.out.println("Connection Socket Created");
-            try {
-                while (true) {
-                    System.out.println("Waiting for Connection");
-                    WebServer webserver = new WebServer(serverSocket.accept(), PATH_SITE);
-                    webserver.start_server();
-                    if(webserver.stopWaiting())
-                        break;
-                }
-            } catch (IOException e) {
-                System.err.println("Accept failed.");
-                System.exit(1);
-            }
-        } finally {
-            try {
-                serverSocket.close();
-            } catch (IOException e) {
-                System.err.println("Could not close port: "+PORT_SERVER_SOCKET);
-                System.exit(1);
-            }
-        }
-    }
+
 
 }
