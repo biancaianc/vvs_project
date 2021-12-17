@@ -29,7 +29,7 @@ public class WebServerTest {
     }
     @Test
     public void sendToOutputClient_test_normal() throws FileNotFoundException {
-        WebServer webServer=new WebServer(new Socket(),"src/main/resources/TestSite/");
+        WebServer webServer=new WebServer(new Socket());
         File file=new File("src/test/resources/test_input.txt");
         PrintWriter printWriter= new PrintWriter(new OutputStreamWriter(
                 new FileOutputStream("src/test/resources/test_output.txt"), StandardCharsets.UTF_8), true);
@@ -48,7 +48,7 @@ public class WebServerTest {
 
     @Test
     public void sendToOutputClient_test_jpg() throws FileNotFoundException {
-        WebServer webServer=new WebServer(new Socket(),"src/main/resources/TestSite/");
+        WebServer webServer=new WebServer(new Socket());
         File file=new File("src/test/resources/test_input.jpg");
         PrintWriter printWriter= new PrintWriter(new OutputStreamWriter(
                 new FileOutputStream("src/test/resources/test_output.txt"), StandardCharsets.UTF_8), true);
@@ -84,14 +84,14 @@ public class WebServerTest {
 
     @Test
     public void takePathFromRequestGet_normal() {
-        WebServer webServer=new WebServer(new Socket(),"src/main/resources/TestSite/");
+        WebServer webServer=new WebServer(new Socket());
         String expected = "/a.html";
         String result = webServer.takePathFromRequestGet("GET /a.html HTTP/1.1");
         assertEquals(expected, result);
     }
     @Test
     public void takePathFromRequestGet_index() {
-        WebServer webServer=new WebServer(new Socket(),"src/main/resources/TestSite/");
+        WebServer webServer=new WebServer(new Socket());
         String expected = "/index.html";
         String result = webServer.takePathFromRequestGet("GET / HTTP/1.1");
         assertEquals(expected, result);

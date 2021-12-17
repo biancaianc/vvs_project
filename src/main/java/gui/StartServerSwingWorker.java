@@ -4,6 +4,8 @@ import server.WebServerConnection;
 
 import javax.swing.*;
 
+//import static gui.WebServerControl.semaphore;
+
 public class StartServerSwingWorker extends SwingWorker<WebServerConnection,Integer> {
 
 
@@ -18,6 +20,7 @@ public class StartServerSwingWorker extends SwingWorker<WebServerConnection,Inte
 
     @Override
     protected WebServerConnection doInBackground() throws Exception {
+
         WebServerConnection.connectToServer(port_server_socket,path_site);
         return null;
     }

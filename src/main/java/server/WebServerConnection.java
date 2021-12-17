@@ -5,8 +5,15 @@ import java.net.ServerSocket;
 
 public class WebServerConnection {
     public static int currentState=1;
-    private static WebServer webserver;
+    public static int lastState=1;
+    public static String rootDirectory="src/main/resources/TestSite";
+    public static String maintenanceDirectory="src/main/resources/TestSite/maintenance.html";
 
+    public static WebServer getWebserver() {
+        return webserver;
+    }
+
+    public static WebServer webserver;
     public static int getCurrentState() {
         return currentState;
     }
@@ -17,7 +24,7 @@ public class WebServerConnection {
             try {
                 while (true) {
                     System.out.println("Waiting for Connection");
-                   webserver = new WebServer(serverSocket.accept(), PATH_SITE);
+                    webserver = new WebServer(serverSocket.accept());
                     webserver.start_server();
                     if(webserver.stopWaiting())
                         break;

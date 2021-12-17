@@ -12,22 +12,21 @@ import java.util.Scanner;
 
 public class WebServer extends Thread {
 
-    private final String sitePath;
+    private String sitePath;
     private Socket clientSocket;
     private WebServerUtil webServerUtil;
 
-
-    public WebServer(Socket clientSoc, String sitePath) {
+    public WebServer(Socket clientSoc) {
         clientSocket = clientSoc;
-        this.sitePath = sitePath;
+        this.sitePath = WebServerConnection.rootDirectory;
         webServerUtil = new WebServerUtil(sitePath);
-
     }
 
     public String start_server(){
         start();
         return "start";
     }
+
     public void run() {
 
         try {
@@ -38,19 +37,26 @@ public class WebServer extends Thread {
             String inputLine;
             File myFile = null;
 
-            if (WebServerConnection.getCurrentState() == 2) {
-                myFile = new File(sitePath + "/maintenance.html");
+            if(WebServerConnection.getCurrentState()==2) {
+                myFile = new File(WebServerConnection.maintenanceDirectory);
             }
+
             if (WebServerConnection.getCurrentState() == 0) {
                 while ((inputLine = in.readLine()) != null) {
-                    System.out.println("Server: " + inputLine);
-                    if (inputLine.startsWith("GET")) {
-                        String requestedFilePath = takePathFromRequestGet(inputLine);
-                        myFile = webServerUtil.takeRequestedFile(requestedFilePath);
-                    }
-
-                    if (inputLine.trim().equals(""))
+                    if(WebServerConnection.getCurrentState()==2)
+                    {
+                        myFile = new File(WebServerConnection.maintenanceDirectory);
                         break;
+                    }else {
+                        System.out.println("Server: " + inputLine);
+                        if (inputLine.startsWith("GET")) {
+                            String requestedFilePath = takePathFromRequestGet(inputLine);
+                            myFile = webServerUtil.takeRequestedFile(requestedFilePath);
+                        }
+
+                        if (inputLine.trim().equals(""))
+                            break;
+                    }
                 }
             }
 
@@ -62,6 +68,9 @@ public class WebServer extends Thread {
 
 
             while (clientSocket.getKeepAlive()) {
+
+
+
 
             }
             out.close();
