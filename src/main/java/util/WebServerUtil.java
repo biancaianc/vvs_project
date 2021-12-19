@@ -1,21 +1,21 @@
 package util;
 
+import common.Common;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class WebServerUtil {
-    private String sitePath;
-    public WebServerUtil(String sitepah) {
-        this.sitePath=sitepah;
-   }
 
-    public File takeRequestedFile(String requestedFilePath) throws IOException {
-        String p = this.sitePath;
+    public static File takeRequestedFile(String requestedFilePath) throws IOException {
+        String p = Common.rootDirectory;
         p = p.concat(requestedFilePath);
         p = p.trim();
         p = p.replaceAll("%20", " ");
@@ -29,19 +29,21 @@ public class WebServerUtil {
         }
     }
 
-    public File findRequestedFileInSiteDirectory( String endpoint) throws IOException {
-        List<Path> mylist = Files.walk(Paths.get(this.sitePath))
+    public static File findRequestedFileInSiteDirectory(String endpoint) throws IOException {
+        Optional<Path> myPath = Files.walk(Paths.get(Common.rootDirectory))
                 .filter(Files::isRegularFile)
                 .filter(path1 -> path1.endsWith(endpoint))
-                .collect(Collectors.toList());
-        if (mylist.size() == 0) {
-            return new File(this.sitePath +"/error.html");
-        } else {
-            return new File(String.valueOf(mylist.get(0)));
+                .findFirst();
+
+        if (myPath.isPresent() ) {
+
+            return new File(String.valueOf(myPath.get()));
+
         }
+        return new File(Common.rootDirectory + "/error.html");
     }
 
-
 }
+
 
 

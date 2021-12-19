@@ -7,9 +7,9 @@ import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 
-public class WebServerUtilTest {
+public class ClientUtilTest {
     private String path = "src/main/resources/TestSite/";
-    WebServerUtil webServerUtil=new WebServerUtil(path);
+    WebServerUtil webServerUtil=new WebServerUtil();
 
     @Test
     public void takeRequestedFileTest_simpleRelative() throws IOException {

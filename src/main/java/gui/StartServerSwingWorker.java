@@ -1,27 +1,20 @@
 package gui;
 
-import server.WebServerConnection;
+
+import server.WebServer;
 
 import javax.swing.*;
 
-//import static gui.WebServerControl.semaphore;
 
-public class StartServerSwingWorker extends SwingWorker<WebServerConnection,Integer> {
-
-
-    private int port_server_socket;
-    private String path_site;
-
-    public StartServerSwingWorker(int port_server_socket, String path_site) {
-        this.port_server_socket = port_server_socket;
-        this.path_site = path_site;
+public class StartServerSwingWorker extends SwingWorker<WebServer,Integer> {
+    public WebServer getWebServerConnection() {
+        return webServer;
     }
 
-
+    public WebServer webServer =new WebServer();
     @Override
-    protected WebServerConnection doInBackground() throws Exception {
-
-        WebServerConnection.connectToServer(port_server_socket,path_site);
+    protected WebServer doInBackground() throws Exception {
+        webServer.start();
         return null;
     }
 

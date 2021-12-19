@@ -1,8 +1,7 @@
 package gui;
 
-import server.WebServer;
-import server.WebServerConnection;
-
+import common.Common;
+import util.WebServerUtil;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
@@ -10,34 +9,24 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.SQLOutput;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.Semaphore;
-import java.util.stream.Collectors;
 
 
 public class WebServerControl extends JFrame {
-    //public static Semaphore semaphore = new Semaphore(0);
 
-    private int PORT_SERVER_SOCKET = 10051;
-    private String maintanance_directory = WebServerConnection.maintenanceDirectory;
-    private String PATH_SITE = WebServerConnection.rootDirectory;
     private JPanel mainPanel;
     private JButton startServerButton;
     private JTextField port;
     private JTextField rootDirectory;
     private JTextField maintenanceDirectory;
     private JButton stopServerButton;
-    private JButton maintenaceModeButton;
     private JLabel serverStatus_label;
     private JLabel serverAdress_label;
     private JLabel serverListeningPort_label;
     private JCheckBox maintenanceModeCheckBox;
     private JCheckBox checkBox1;
     private JCheckBox checkBox2;
+    StartServerSwingWorker mySwingWorker;
 
     public WebServerControl(String title) throws IOException {
         super(title);
@@ -47,8 +36,8 @@ public class WebServerControl extends JFrame {
         this.serverStatus_label.setText("stopped");
         this.serverListeningPort_label.setText("stopped");
         this.serverAdress_label.setText("stopped");
-        this.port.setText(String.valueOf(this.PORT_SERVER_SOCKET));
-        this.rootDirectory.setText(String.valueOf(this.PATH_SITE));
+        this.port.setText(String.valueOf(Common.port));
+        this.rootDirectory.setText(String.valueOf(Common.rootDirectory));
         this.maintenanceDirectory.setText("nu stiu");
         this.stopServerButton.setEnabled(false);
         this.maintenanceModeCheckBox.setEnabled(false);
@@ -56,28 +45,32 @@ public class WebServerControl extends JFrame {
         this.checkBox2.setEnabled(false);
         this.checkBox1.setSelected(true);
         this.checkBox2.setSelected(true);
-        this.maintenanceDirectory.setText(WebServerConnection.maintenanceDirectory);
+        this.maintenanceDirectory.setText(Common.maintenanceDirectory);
+
 
         startServerButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 serverStatus_label.setText("running");
-                serverListeningPort_label.setText(String.valueOf(PORT_SERVER_SOCKET));
+                serverListeningPort_label.setText(String.valueOf(Common.port));
                 serverAdress_label.setText("127.0.0.1");
-                WebServerConnection.currentState = 0;
-                StartServerSwingWorker mySwingWorker = new StartServerSwingWorker(PORT_SERVER_SOCKET, PATH_SITE);
+                Common.currentState = 0;
+                System.out.println("PORT:" + Common.port);
+
+                mySwingWorker = new StartServerSwingWorker();
                 try {
                     mySwingWorker.execute();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
+                if (checkBox2.isSelected()) {
+                    maintenanceModeCheckBox.setEnabled(true);
+                }
                 startServerButton.setEnabled(false);
                 stopServerButton.setEnabled(true);
                 port.setEnabled(false);
                 rootDirectory.setEnabled(false);
                 maintenanceDirectory.setEnabled(true);
-                maintenanceModeCheckBox.setEnabled(true);
             }
         });
 
@@ -87,8 +80,13 @@ public class WebServerControl extends JFrame {
                 serverStatus_label.setText("not running");
                 serverListeningPort_label.setText("not running");
                 serverAdress_label.setText("not running");
-                WebServerConnection.currentState = 1;
-                WebServerConnection.getWebserver().stop();
+                Common.currentState = 1;
+                mySwingWorker.webServer.stop();
+                try {
+                    Common.serverSocket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 System.out.println("stopped");
                 stopServerButton.setEnabled(false);
                 startServerButton.setEnabled(true);
@@ -97,7 +95,7 @@ public class WebServerControl extends JFrame {
                 maintenanceDirectory.setEnabled(false);
                 maintenanceModeCheckBox.setSelected(false);
                 maintenanceModeCheckBox.setEnabled(false);
-
+                System.out.println("PORT:" + Common.port);
 
             }
         });
@@ -106,11 +104,10 @@ public class WebServerControl extends JFrame {
         port.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
-
                 String text = port.getText();
                 System.out.println(text);
                 try {
-                    PORT_SERVER_SOCKET = Integer.parseInt(text);
+                    Common.port = Integer.parseInt(text);
                 } catch (NumberFormatException numberFormatException) {
                     System.out.println("This is not a number");
                 }
@@ -123,9 +120,9 @@ public class WebServerControl extends JFrame {
             public void actionPerformed(ActionEvent actionEvent) {
                 if (maintenanceModeCheckBox.getModel().isSelected()) {
                     serverStatus_label.setText("maintenance");
-                    serverListeningPort_label.setText(String.valueOf(PORT_SERVER_SOCKET));
+                    serverListeningPort_label.setText(String.valueOf(Common.port));
                     serverAdress_label.setText("127.0.0.1");
-                    WebServerConnection.currentState = 2;
+                    Common.currentState = 2;
                     //ADD here
                     port.setEnabled(false);
                     maintenanceDirectory.setEnabled(false);
@@ -134,7 +131,7 @@ public class WebServerControl extends JFrame {
                     rootDirectory.setEnabled(false);
                     maintenanceDirectory.setEnabled(true);
                     serverStatus_label.setText("running");
-                    WebServerConnection.currentState = 0;
+                    Common.currentState = 0;
                 }
             }
         });
@@ -143,12 +140,17 @@ public class WebServerControl extends JFrame {
             public void actionPerformed(ActionEvent actionEvent) {
                 String text = rootDirectory.getText();
                 System.out.println(text);
+                Common.rootDirectory = text;
                 try {
                     if (validateRootDirectory(text)) {
                         checkBox1.setSelected(true);
-                        WebServerConnection.rootDirectory = text;
-                    } else
+                        startServerButton.setEnabled(true);
+                        Common.lastRoot = text;
+                    } else {
+                        Common.rootDirectory = Common.lastRoot;
                         checkBox1.setSelected(false);
+                        startServerButton.setEnabled(false);
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -156,7 +158,7 @@ public class WebServerControl extends JFrame {
 
             }
         });
-        System.out.println(validateRootDirectory("src/main/resources/TestSite"));
+
         maintenanceDirectory.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -165,9 +167,12 @@ public class WebServerControl extends JFrame {
                 try {
                     if (validateMaintenanceDirectory(text)) {
                         checkBox2.setSelected(true);
-                        WebServerConnection.maintenanceDirectory = text;
-                    } else
+                        maintenanceModeCheckBox.setEnabled(true);
+                        Common.maintenanceDirectory = text;
+                    } else {
                         checkBox2.setSelected(false);
+                        maintenanceModeCheckBox.setEnabled(false);
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -187,22 +192,28 @@ public class WebServerControl extends JFrame {
         return false;
     }
 
-    //un root directory e valid daca calea data exista, e un director si contine cel putin un fisier .html
+
     private boolean validateRootDirectory(String text) throws IOException {
+        Common.rootDirectory = text;
         File file = new File(text);
         if (file.exists() && file.isDirectory()) {
             System.out.println("e director");
             Boolean isMaintenance = Files.walk(Paths.get(text))
                     .filter(Files::isRegularFile)
                     .anyMatch(path -> path.toString().endsWith("maintenance.html"));
-            Boolean isError = Files.walk(Paths.get(text))
-                    .filter(Files::isRegularFile)
-                    .anyMatch(path -> path.toString().endsWith("error.html"));
+            boolean isError = true;
+            File errorFile = WebServerUtil.takeRequestedFile("/error.html");
+            if (!errorFile.getPath().equals(new File(text + "/error.html").getPath())) {
+                isError = false;
+            }
+
             Boolean isIndex = Files.walk(Paths.get(text))
                     .filter(Files::isRegularFile)
                     .anyMatch(path -> path.toString().endsWith("index.html"));
+
             if (isMaintenance && isError && isIndex)
                 return true;
+
         }
         return false;
     }
@@ -214,14 +225,4 @@ public class WebServerControl extends JFrame {
 
     }
 
-    private void createUIComponents() {
-
-    }
-
-
-    public String getMaintanance_directory() {
-        return maintanance_directory;
-    }
-
-
-    }
+}
