@@ -28,7 +28,7 @@ public class WebServerControl extends JFrame {
     private JCheckBox checkBox2;
     StartServerSwingWorker mySwingWorker;
 
-    public WebServerControl(String title) throws IOException {
+    public WebServerControl(String title) {
         super(title);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setContentPane(mainPanel);
@@ -219,7 +219,7 @@ public class WebServerControl extends JFrame {
     }
 
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         JFrame jFrame = new WebServerControl("Configure the web server");
         jFrame.setVisible(true);
 
